@@ -8,10 +8,6 @@
 
 
 
-\[Image of high availability architecture diagram]
-
-
-
 \## 📖 Overview
 
 
@@ -42,10 +38,6 @@ The system is built on the \*\*"Redundant Load Balancer"\*\* pattern:
 
 
 
----
-
-
-
 \## 🚀 Quick Start
 
 
@@ -60,9 +52,169 @@ The system is built on the \*\*"Redundant Load Balancer"\*\* pattern:
 
 \### 1. Start the Infrastructure
 
-Launch the cluster in detached mode. This builds the images and starts NGINX + 2 App containers.
+Launch the cluster in detached mode.
+
+
 
 ```bash
 
 docker-compose up -d --build
+
+```
+
+
+
+\### 2. Start the Availability Monitor
+
+Run the tester script to watch the system's heartbeat. It prints the HTTP status and Response Time in real-time.
+
+
+
+```bash
+
+python tester.py
+
+```
+
+> \*\*Goal:\*\* Keep this running. You want to see `✅ 200 OK` continuously.
+
+
+
+\### 3. Release the Chaos Monkey 🐵
+
+Run the automation script that randomly kills containers.
+
+
+
+```bash
+
+python chaos\_monkey.py
+
+```
+
+> \*\*Observation:\*\* You will see containers dying and restarting. The `tester.py` should remain Green (200 OK) as NGINX fails over instantly.
+
+
+
+\## 🧪 Experiments \& Scenarios
+
+
+
+\### Scenario A: The "Invisible" Failure
+
+1\. With the Chaos Monkey running, watch `tester.py`.
+
+2\. Even when a container is killed, you will notice \*\*Zero Errors\*\*.
+
+3\. You might see a slight latency spike (e.g., 15ms -> 1000ms) as NGINX waits for the timeout and switches to the backup server.
+
+
+
+\### Scenario B: The "Rolling Update" (Zero-Downtime Deployment)
+
+How to upgrade from \*\*Version 1\*\* to \*\*Version 2\*\* without stopping the system:
+
+
+
+1\. Modify `app/server.py` and change the return message (e.g., to `"🚀 v2.0 is here!"`).
+
+2\. Update \*\*only\*\* App 1:
+
+
+
+```bash
+
+docker-compose up -d --no-deps --build app1
+
+```
+
+
+
+3\. Watch `tester.py`. You will see a mix of "Alive!" (v1) and "v2.0" messages.
+
+4\. Update App 2 to complete the rollout:
+
+
+
+```bash
+
+docker-compose up -d --no-deps --build app2
+
+```
+
+
+
+\## 📂 Project Structure
+
+
+
+```plaintext
+
+.
+
+├── app/
+
+│   ├── Dockerfile         # Python environment setup
+
+│   ├── server.py          # Flask app with /crash endpoint
+
+│   └── requirements.txt   # Dependencies
+
+├── chaos\_monkey.py        # The "Villain": Randomly kills containers
+
+├── docker-compose.yml     # The Blueprint: Defines the cluster
+
+├── nginx.conf             # The Traffic Cop: Load balancing rules
+
+├── tester.py              # The User: Monitors availability
+
+└── README.md              # You are here
+
+```
+
+
+
+\## ⚙️ Configuration Details
+
+
+
+\### Self-Healing Mechanism:
+
+We use the Docker Restart Policy in `docker-compose.yml`:
+
+
+
+```yaml
+
+restart: always
+
+```
+
+
+
+\### Failover Mechanism:
+
+We configure NGINX to detect failures in `nginx.conf`:
+
+
+
+```nginx
+
+proxy\_connect\_timeout 1s;
+
+proxy\_next\_upstream error timeout http\_500;
+
+```
+
+
+
+\## 🤝 Contributing
+
+Feel free to fork this project and add \*\*Prometheus/Grafana\*\* monitoring or deploy it to \*\*Kubernetes\*\*!
+
+
+
+\## 📜 License
+
+MIT License. Built for educational purposes in Chaos Engineering.
 
