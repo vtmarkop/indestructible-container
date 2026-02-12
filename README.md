@@ -24,6 +24,38 @@ It simulates a real-world environment where a \*\*Chaos Monkey\*\* script random
 
 
 
+```mermaid
+
+graph TD
+
+&nbsp;   User((User)) -->|HTTP Request| NGINX\[NGINX Load Balancer]
+
+&nbsp;   NGINX -->|Round Robin| App1\[App Instance 1]
+
+&nbsp;   NGINX -->|Round Robin| App2\[App Instance 2]
+
+&nbsp;   Monkey\[Chaos Monkey] -.->|Kills| App1
+
+&nbsp;   Monkey -.->|Kills| App2
+
+&nbsp;   Docker\[Docker Compose] -.->|Restarts| App1
+
+&nbsp;   Docker -.->|Restarts| App2
+
+&nbsp;   
+
+&nbsp;   style NGINX fill:#468499,stroke:#333,stroke-width:2px,color:#fff
+
+&nbsp;   style App1 fill:#44cc11,stroke:#333,stroke-width:2px,color:#fff
+
+&nbsp;   style App2 fill:#44cc11,stroke:#333,stroke-width:2px,color:#fff
+
+&nbsp;   style Monkey fill:#ff5555,stroke:#333,stroke-width:2px,color:#fff
+
+```
+
+
+
 The system is built on the \*\*"Redundant Load Balancer"\*\* pattern:
 
 
