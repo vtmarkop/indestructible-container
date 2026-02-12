@@ -1,16 +1,22 @@
 version: '3.8'
 
 services:
+  # --- THE APPS ---
   app1:
     build: ./app
     hostname: "instance-01"
-    restart: always  # Simulate recovery (Docker restarts it if it dies)
+    restart: always
+    ports:
+      - "5001:5000" # Expose for metrics debugging
 
   app2:
     build: ./app
     hostname: "instance-02"
     restart: always
+    ports:
+      - "5002:5000"
 
+  # --- LOAD BALANCER ---
   nginx:
     image: nginx:latest
     volumes:
@@ -20,3 +26,19 @@ services:
     depends_on:
       - app1
       - app2
+
+  # --- 📊 PROMETHEUS (The Recorder) ---
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  # --- 📈 GRAFANA (The Dashboard) ---
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
