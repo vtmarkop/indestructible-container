@@ -1,0 +1,21 @@
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+
+# --- System ---
+.DS_Store
+Thumbs.db
+
+# --- IDEs ---
+.vscode/
+.idea/
+
+# --- Docker ---
+# We generally WANT to commit Dockerfiles, but ignore local overrides
+docker-compose.override.yml
