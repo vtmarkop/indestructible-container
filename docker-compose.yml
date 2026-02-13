@@ -3,18 +3,24 @@ version: '3.8'
 services:
   # --- THE APPS ---
   app1:
-    build: ./app
-    hostname: "instance-01"
-    restart: always
-    ports:
-      - "5001:5000" # Expose for metrics debugging
+      build: ./app
+      hostname: "instance-01"
+      restart: always
+      # --- 🔓 ENABLE CHAOS CAPABILITIES ---
+      cap_add:
+        - NET_ADMIN
+      ports:
+        - "5001:5000"
 
   app2:
-    build: ./app
-    hostname: "instance-02"
-    restart: always
-    ports:
-      - "5002:5000"
+      build: ./app
+      hostname: "instance-02"
+      restart: always
+      # --- 🔓 ENABLE CHAOS CAPABILITIES ---
+      cap_add:
+        - NET_ADMIN
+      ports:
+        - "5002:5000"
 
   # --- LOAD BALANCER ---
   nginx:
@@ -42,3 +48,11 @@ services:
       - "3000:3000"
     depends_on:
       - prometheus
+
+  # --- 🧠 REDIS (The Shared Brain) ---
+  redis:
+    image: redis:alpine
+    hostname: redis
+    restart: always
+    ports:
+      - "6379:6379"  # Exposed for local debugging if needed
